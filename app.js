@@ -1,15 +1,18 @@
-import express from 'express'
-import cors from 'cors'
-import { PrismaClient } from '@prisma/client'
+// app.js
+import express from 'express';
+import cors from 'cors';
+import { PrismaClient } from '@prisma/client';
 import { encryptVoterId } from './utils/cripto.js';
 import nodemailer from 'nodemailer';
 import dotenv from 'dotenv';
 
-const prisma = new PrismaClient()
-const app = express()
-app.use(express.json())
-app.use(cors())
 dotenv.config();
+
+const prisma = new PrismaClient();
+const app = express();
+
+app.use(express.json());
+app.use(cors());
 
 // Configuração do transporte Nodemailer
 const transporter = nodemailer.createTransport({
@@ -20,23 +23,23 @@ const transporter = nodemailer.createTransport({
       user: 'luiz.fernandocsilva17@gmail.com', // Seu e-mail do Gmail
       pass: process.env.SECRET_KEY_EMAIL // Senha de app gerada no Google
     }
-  });
-  
-  // Função para enviar o e-mail com o título de eleitor
-  async function sendVoterTitleEmail(email, numTitle) {
+});
+
+// Função para enviar o e-mail com o título de eleitor
+async function sendVoterTitleEmail(email, numTitle) {
     try {
-      let info = await transporter.sendMail({
-        from: '"Sistema de Votação" <luiz.fernandocsilva17@gmail.com>', // Remetente
-        to: email, // E-mail do destinatário
-        subject: "Seu Título de Eleitor", // Assunto do e-mail
-        text: `Olá, seu título de eleitor é: ${numTitle}. Guarde-o com segurança!`, // Conteúdo do e-mail
-      });
-  
-      console.log("E-mail enviado: %s", info.messageId);
+        let info = await transporter.sendMail({
+            from: '"Sistema de Votação" <luiz.fernandocsilva17@gmail.com>', // Remetente
+            to: email, // E-mail do destinatário
+            subject: "Seu Título de Eleitor", // Assunto do e-mail
+            text: `Olá, seu título de eleitor é: ${numTitle}. Guarde-o com segurança!`, // Conteúdo do e-mail
+        });
+
+        console.log("E-mail enviado: %s", info.messageId);
     } catch (error) {
-      console.error("Erro ao enviar e-mail:", error);
+        console.error("Erro ao enviar e-mail:", error);
     }
-  }
+}
 
 async function generateUniqueTitleNumber() {
     let numTitle;
@@ -92,8 +95,6 @@ app.post('/', async (req, res) => {
     }
 });
 
-
-
 app.post('/vote', async (req, res) => {
     try {
         const { candidate_id, numTitle } = req.body;
@@ -116,7 +117,7 @@ app.post('/vote', async (req, res) => {
             return res.status(401).json({ error: 'Voto já computado.' });
         }
 
-        const encryptedVoterId =  encryptVoterId(voter.id);
+        const encryptedVoterId = encryptVoterId(voter.id);
         // Computa o voto
         await prisma.votes.create({
             data: {
@@ -131,7 +132,6 @@ app.post('/vote', async (req, res) => {
         res.status(500).json({ error: 'Erro ao computar voto.' });
     }
 });
-
 
 app.get('/results/:id?', async (req, res) => {
     try {
@@ -168,16 +168,10 @@ app.get('/results/:id?', async (req, res) => {
             }
         }
     }
-        catch (error) {
-            console.error("Erro ao buscar resultados:", error);
-            res.status(500).json({ error: 'Erro ao buscar resultados.' });
-        }
+    catch (error) {
+        console.error("Erro ao buscar resultados:", error);
+        res.status(500).json({ error: 'Erro ao buscar resultados.' });
+    }
 });
 
-const PORT = process.env.PORT || 3000;
-
-app.listen(PORT, () => {
-    console.log(`Servidor rodando na porta ${PORT}`);
-});
-
-export default app
+export default app;
