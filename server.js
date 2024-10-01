@@ -3,12 +3,13 @@ import cors from 'cors'
 import { PrismaClient } from '@prisma/client'
 import { encryptVoterId } from './utils/cripto.js';
 import nodemailer from 'nodemailer';
-
+import dotenv from 'dotenv';
 
 const prisma = new PrismaClient()
 const app = express()
 app.use(express.json())
 app.use(cors())
+dotenv.config();
 
 // Configuração do transporte Nodemailer
 const transporter = nodemailer.createTransport({
@@ -173,6 +174,10 @@ app.get('/results/:id?', async (req, res) => {
         }
 });
 
-app.listen(3000)
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, () => {
+    console.log(`Servidor rodando na porta ${PORT}`);
+});
 
 export default app
