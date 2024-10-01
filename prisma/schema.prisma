@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -14,15 +8,21 @@ datasource db {
 }
 
 model Voters {
-  id   String  @id @default(auto()) @map("_id") @db.ObjectId
-  name String?
-  cpf  String? @unique
+  id       String @id @default(auto()) @map("_id") @db.ObjectId
+  numTitle String @unique
+  name     String
+  cpf      String @unique
+  email    String @unique // Novo campo para armazenar o e-mail do usuário
+  vote     Votes?
 }
 
 model Votes {
   id           String   @id @default(auto()) @map("_id") @db.ObjectId
-  voter_id     String?
-  candidate_id String?
+  voter_id     String   @unique @db.ObjectId
+  candidate_id String
   created_at   DateTime @default(now())
   updated_at   DateTime @updatedAt
+
+  // Relacionamento com Voters
+  voter Voters? @relation(fields: [voter_id], references: [id])
 }
